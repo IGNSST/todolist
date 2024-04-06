@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Atsiliepimai</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <main>
+        <h1>Straipsnis</h1>
+        <p>Straipsnio tekstas</p>
+        <div id="app">
+          <h2>Straipsnio atsiliepimai</h2>
+          <div class="input-group mb-3">
+            <span class="input-group-text"
+              >Straipsnio bendras įvertinimas (3.8) ★★★★☆
+            </span>
+            <span class="input-group-text" id="sort_by"
+              >Rūšiuoti atsiliepimus pagal</span
+            >
+            <select class="form-select" aria-describedby="sort_by">
+              <option selected>Naujausi viršuje</option>
+              <option>Seniausi viršuje</option>
+            </select>
+          </div>
+
+          <div>
+            <div class="card mb-3">
+              <div class="card-header">
+                Jonas (2023-09-26, 14:50)
+                <span>★★★★☆</span>
+              </div>
+              <div class="card-body">
+                <p class="card-text">Atsiliepimo tekstas</p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-header">
+                Jonas (2023-09-26, 14:50)
+                <span>★★★★☆</span>
+              </div>
+              <div class="card-body">
+                <p class="card-text">Atsiliepimo tekstas</p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-header">
+                Jonas (2023-09-26, 14:50)
+                <span>★★★★☆</span>
+              </div>
+              <div class="card-body">
+                <p class="card-text">Atsiliepimo tekstas</p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-header">
+                Jonas (2023-09-26, 14:50)
+                <span>★★★★☆</span>
+              </div>
+              <div class="card-body">
+                <p class="card-text">Atsiliepimo tekstas</p>
+              </div>
+            </div>
+          </div>
+
+          <h2 class="my-3">Palikti atsiliepimą</h2>
+          <form>
+            <div class="input-group mb-3">
+              <span class="input-group-text">Jūsų vertinimas:</span>
+              <div class="input-group-text">
+                <span>★</span>&nbsp; <span>★</span>&nbsp; <span>★</span>&nbsp;
+                <span>★</span>&nbsp;
+                <span>☆</span>
+              </div>
+            </div>
+            <div class="input-group mb-3">
+              <span class="input-group-text">Jūsų vardas:</span>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Vardenis"
+                aria-label="Name"
+              />
+              <span class="input-group-text">El. paštas</span>
+              <input
+                type="email"
+                class="form-control"
+                placeholder="vardas@gmail.com"
+                aria-label="Email"
+              />
+            </div>
+            <div class="input-group">
+              <span class="input-group-text">Atsiliepimo tekstas</span>
+              <textarea
+                class="form-control is-invalid"
+                aria-label="With textarea"
+                aria-describedby="validationServer03Feedback"
+                required
+              ></textarea>
+              <div id="validationTekstasFeedback" class="invalid-feedback">
+                Atsiliepimo tekstas privalomas
+              </div>
+
+            </div>
+
+            <div class="input-group mt-3">
+              <button class="btn btn-primary" type="submit">Siųsti</button>
+            </div>
+          </form>
+        </div>
+      </main>
+    </div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
