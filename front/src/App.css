@@ -7,11 +7,7 @@
 
 }
 
-.container{
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-}
+
 
 .App-logo {
   height: 40vmin;
@@ -44,7 +40,55 @@ body {
   margin: 0;
   padding: 0;
   font-family: Arial, sans-serif;
+  background-color: #333;
 }
+
+.sidebar h1{
+  text-align: center;
+}
+
+.tables {
+  appearance: none;
+  background-color: #000000;
+  border: 2px solid #1A1A1A;
+  border-radius: 15px;
+  box-sizing: border-box;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: inline-block;
+  font-family: Roobert,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+  font-size: 16px;
+  font-weight: 600;
+  line-height: normal;
+  margin: 0;
+  min-height: 60px;
+  min-width: 0;
+  outline: none;
+  padding: 16px 24px;
+  text-align: center;
+  text-decoration: none;
+  transition: all 300ms cubic-bezier(.23, 1, 0.32, 1);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  width: 100%;
+  will-change: transform;
+}
+
+.tables:disabled {
+  pointer-events: none;
+}
+
+.tables:hover {
+  box-shadow: rgba(0, 0, 0, 0.25) 0 8px 15px;
+  transform: translateY(-2px);
+}
+
+.tables:active {
+  box-shadow: none;
+  transform: translateY(0);
+}
+
 
 /* Sidebar styles */
 .sidebar {
@@ -93,24 +137,28 @@ header {
 
 .list-container {
   display: flex; /* Flex the list items */
-  overflow-y: auto; /* Allow horizontal overflow with scroll */
+
 }
+
 
 .header-content {
   display: flex;
+  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  overflow-y: auto; /* Allow horizontal overflow with scroll */
+ 
 }
 
 main {
   margin-left: 220px; /* Adjust the margin to accommodate the sidebar */
   background-color: black;
-  height: calc(100vh - 20px); /* Adjust the height to fit the viewport minus any padding/margin */
+  height: calc(83vh - 20px); /* Adjust the height to fit the viewport minus any padding/margin */
   color: white;
-  overflow-y: auto; /* Allow vertical overflow with scroll */
+  overflow-x: auto; /* Allow vertical overflow with scroll */
 }
 
 .list {
+  
   text-align: center;
   width: 200px;
   height: 92%;

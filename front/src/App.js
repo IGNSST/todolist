@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
 import './App.css';
 
 function App() {
@@ -15,6 +14,7 @@ function App() {
   const [showAddTableInput, setShowAddTableInput] = useState(false);
   const [newTableName, setNewTableName] = useState('');
 
+
   useEffect(() => {
     reloadLists();
     reloadTasks();
@@ -25,7 +25,9 @@ function App() {
     setCurrentTable(tableId);
   };
 
-  // Fetch lists
+
+
+  // Fetch sarašus
   let reloadLists = () => {
     fetch('http://localhost:3001/lists/', {
       method: "GET",
@@ -50,7 +52,7 @@ function App() {
     });
   };
 
-  // Fetch tasks
+  // Fetch užduotis
   let reloadTasks = () => {
     fetch('http://localhost:3001/tasks/', {
       method: "GET",
@@ -75,6 +77,7 @@ function App() {
     });
   };
 
+  // Fetch lenteles
   let reloadTables = () => {
     fetch('http://localhost:3001/tables/', {
       method: "GET",
@@ -93,12 +96,19 @@ function App() {
     })
     .then((data) => {
       setTables(data);
+      if (Array.isArray(data) && data.length > 0) {
+        const tableExists = data.find(table => table.id);
+        setCurrentTable(tableExists.id);
+      } else {
+        setCurrentTable(0);
+      }
     })
     .catch((error) => {
       console.error("Error fetching tasks:", error);
     });
   };
 
+  // funkcija prideti saraša
   const handleAddList = (tables) => {
     if (!newListName.trim()) return;
     fetch('http://localhost:3001/lists/', {
@@ -113,16 +123,16 @@ function App() {
     })
     .then(response => response.json())
     .then(data => {
-      setLists(prevLists => [...prevLists, data]); // Update lists state with the newly added list
-      setShowAddListInput(false); // Hide the input after adding the list
-      setNewListName(''); // Clear the input field
+      setLists(prevLists => [...prevLists, data]); // Atnaujinti sąrašų būseną su naujai pridėtu sąrašu
+      setShowAddListInput(false); // Paslėpti įvestį po sąrašo pridėjimo
+      setNewListName(''); // Išvalyti įvesties lauką
       reloadLists();
     })
     .catch(error => console.error("Error adding list:", error));
   };
   
 
-  // Function to handle creating a new task
+// Funkcija, skirta tvarkyti naujos užduoties kūrimą
   const handleNewTask = (listId) => {
     if (newTaskName) {
       fetch('http://localhost:3001/tasks/', {
@@ -144,7 +154,7 @@ function App() {
         return response.json();
       })
       .then(newTask => {
-        // Update tasks state with the newly created task
+        // Atnaujinti užduočių būseną su naujai sukurtu užduotimi
         setTasks([...tasks, newTask]);
         reloadLists();
         reloadTasks();
@@ -157,13 +167,14 @@ function App() {
     }
   };
 
+// Funkcija, skirta tvarkyti užduoties redagavimą
   const handleEditTask = (taskId, updatedTitle) => {
     const updatedTasks = tasks.map(task =>
       task.id === taskId ? { ...task, title: updatedTitle } : task
     );
     setTasks(updatedTasks);
   
-    // Send a PUT request to update the task's details in the backend
+    // Siųsti PUT užklausą, kad būtų atnaujintos užduoties detalės serverio pusėje
     fetch(`http://localhost:3001/tasks/${taskId}`, {
       method: 'PUT',
       headers: {
@@ -182,23 +193,22 @@ function App() {
         return response.json();
       })
       .then(() => {
-        // Reload lists and tasks only after the API call is successful
+        // Įkelti sąrašus ir užduotis tik tada, kai API užklausa yra sėkminga
         reloadLists();
         reloadTasks();
         setNewTaskName('');
       })
       .catch(error => {
         console.error('Error updating task:', error);
-        // You can add additional error handling or notifications here
       });
   };
   
   const handleDeleteTask = (taskId) => {
-    // Remove the task from the tasks state
+    // Pašalinti užduotį iš užduočių būsenos
     const updatedTasks = tasks.filter(task => task.id !== taskId);
     setTasks(updatedTasks);
   
-    // Send a DELETE request to delete the task from the backend
+    // Siųsti DELETE užklausą, kad būtų ištrinta užduotis iš serverio pusės
     fetch(`http://localhost:3001/tasks/${taskId}`, {
       method: 'DELETE',
     })
@@ -206,23 +216,21 @@ function App() {
         if (!response.ok) {
           throw new Error('Failed to delete task');
         }
-        // Optional: Handle success or display a success message
       })
       .catch(error => {
         console.error('Error deleting task:', error);
-        // Optional: Handle error or display an error message
       });
   };
 
-// Function to handle editing a list
+// Funkcija, skirta tvarkyti sąrašo redagavimą
 const handleEditList = (listId, updatedName) => {
-  // Update the lists state with the edited list
+// Atnaujinti sąrašų būseną su redaguotu sąrašu
   const updatedLists = lists.map(list =>
     list.id === listId ? { ...list, name: updatedName } : list
   );
   setLists(updatedLists);
 
-  // Send a PUT request to update the list's name in the backend
+// Siųsti PUT užklausą, kad būtų atnaujintas sąrašo pavadinimas serverio pusėje
   fetch(`http://localhost:3001/lists/${listId}`, {
     method: 'PUT',
     headers: {
@@ -245,14 +253,14 @@ const handleEditList = (listId, updatedName) => {
     });
 };
 
-// Function to handle deleting a list and its associated tasks
+// Funkcija, skirta tvarkyti sąrašo ir jo susijusių užduočių trynim
 const handleDeleteList = (listId) => {
   
-// Find the task with the specified listId
+// Rasti užduotis su nurodytu sąrašo ID
 const tasksToDelete = tasks.filter(task => task.Lists_id === listId);
 
   tasksToDelete.forEach(task => {
-    // Send a DELETE request to delete the task from the backend
+    // Siųsti DELETE užklausą, kad būtų ištrintos užduotis iš serverio pusės
     fetch(`http://localhost:3001/tasks/${task.id}`, {
       method: 'DELETE',
     })
@@ -260,20 +268,20 @@ const tasksToDelete = tasks.filter(task => task.Lists_id === listId);
         if (!response.ok) {
           throw new Error('Failed to delete task');
         }
-        // Optional: Handle success or display a success message
+
       })
       .catch(error => {
         console.error('Error deleting task:', error);
-        // Optional: Handle error or display an error message
+
       });
   });
 
 
-  // Remove the list from the UI
+  // Pašalinti sąrašą iš UI
   const updatedLists = lists.filter(list => list.id !== listId);
   setLists(updatedLists);
 
-  // Send a DELETE request to delete the list from the backend
+  // Siųsti DELETE užklausą, kad būtų ištrintas sąrašas iš serverio pusės
   fetch(`http://localhost:3001/lists/${listId}`, {
     method: 'DELETE',
   })
@@ -289,15 +297,16 @@ const tasksToDelete = tasks.filter(task => task.Lists_id === listId);
     });
 };
 
+//funkcija kuri leidzia paiimt elementa ir perdeti i kita saraša
 const handleDragStart = (event, task) => {
   setDraggedTask(task);
 };
 
 const handleDragOver = (event, listId) => {
-  // Prevent the default behavior of dropping elements
   event.preventDefault();
 };
 
+// funkcija kuri issiuncia update
 const handleDrop = (event, listId) => {
   // Keep all the current information of the dragged task except for the list ID
   const updatedTask = {
@@ -331,7 +340,9 @@ const handleDrop = (event, listId) => {
     });
 };
 
+// funkcija prideti lentele
 const handleAddTable = (tableId) => {
+
   if (!newTableName.trim()) return;
   fetch('http://localhost:3001/tables/', {
     method: "POST",
@@ -352,14 +363,15 @@ const handleAddTable = (tableId) => {
   .catch(error => console.error("Error adding list:", error));
 };
 
+// funkcija pakeisti lenteles duomenis
 const handleEditTable = (tableId, updatedName) => {
-  // Update the lists state with the edited list
+    // Atnaujinkite sąrašų būseną su redaguotu sąrašu
   const updatedTables = tables.map(tables =>
     tables.id === tableId ? { ...tables, name: updatedName } : tables
   );
   setTables(updatedTables);
 
-  // Send a PUT request to update the list's name in the backend
+  // Siųskite PUT užklausą, kad būtų atnaujintas sąrašo pavadinimas serverio pusėje
   fetch(`http://localhost:3001/tables/${tableId}`, {
     method: 'PUT',
     headers: {
@@ -374,26 +386,22 @@ const handleEditTable = (tableId, updatedName) => {
       return response.json();
     })
     .then(() => {
-      // Optional: Reload lists or handle success
     })
     .catch(error => {
       console.error('Error updating list:', error);
-      // Optional: Handle error or display an error message
     });
 };
 
-// Function to handle deleting a list and its associated tasks
+// Funkcija istrinti lentele
 const handleDeleteTable = (tableId) => {
   
-// Find the task with the specified listId
+// surasti susijusius objectus kad išstrinti
 const listsToDelete = lists.filter(lists => lists.Tables_id === tableId);
 const tasksToDelete = tasks.filter(task => listsToDelete.some(list => list.id === task.Lists_id));
 
-console.log(tasksToDelete);
-console.log(listsToDelete);
 
 tasksToDelete.forEach(task => {
-  // Send a DELETE request to delete the task from the backend
+  // issiusti DELETE užklausą, kad būtų ištrintas užduotis iš serverio pusės
   fetch(`http://localhost:3001/tasks/${task.id}`, {
     method: 'DELETE',
   })
@@ -401,16 +409,14 @@ tasksToDelete.forEach(task => {
       if (!response.ok) {
         throw new Error('Failed to delete task');
       }
-      // Optional: Handle success or display a success message
     })
     .catch(error => {
       console.error('Error deleting task:', error);
-      // Optional: Handle error or display an error message
     });
 });
 
 listsToDelete.forEach(lists => {
-  // Send a DELETE request to delete the task from the backend
+  // issiusti DELETE užklausą, kad būtų ištrintas sarašas iš serverio pusės
   fetch(`http://localhost:3001/lists/${lists.id}`, {
     method: 'DELETE',
   })
@@ -422,15 +428,15 @@ listsToDelete.forEach(lists => {
     })
     .catch(error => {
       console.error('Error deleting task:', error);
-      // Optional: Handle error or display an error message
     });
 });
 
-  // Remove the list from the UI
+  // nujimti lenteles nuo UI
   const updatedtables = tables.filter(tables => tables.id !== tableId);
   setTables(updatedtables);
 
-  // Send a DELETE request to delete the list from the backend
+
+  // nusiusti delete query lentelem
   fetch(`http://localhost:3001/tables/${tableId}`, {
     method: 'DELETE',
   })
@@ -439,36 +445,42 @@ listsToDelete.forEach(lists => {
         throw new Error('Failed to delete list');
       }
       
-      setCurrentTable(0)
+
       reloadTables()
       reloadLists()
       reloadTasks()
     })
     .catch(error => {
       console.error('Error deleting list:', error);
-      // Optional: Handle error or display an error message
+
     });
 };
+
+
 
   return (
     <div className="app">
       <header>
         <div className="header-content">
-          <img src="logo.png" alt="Logo" className="logo" />
-          <h1>Header</h1>
+          {currentTable !== 0 && (
+            <h2 className='tableTitle'>
+              Dabartine Lentele:  {tables.find(table => table.id === currentTable)?.name}
+            </h2>
+          )}
         </div>
       </header>
       <div id="page-container">
       <div className="sidebar">
+        <h1>Tables</h1>
       {tables.map(tables => (
-      <div key={tables.id}>
+      <div key={tables.id} className='tables'>
         <h5 onClick={() => handleTableClick(tables.id)}>{tables.name}</h5>
-        <button onClick={() => handleEditTable(tables.id, prompt('Enter new task title'))}>Edit</button>
-        <button onClick={() => handleDeleteTable(tables.id)}>Delete</button>
+        <button onClick={() => handleEditTable(tables.id, prompt('Enter new task title'))}>📄</button>
+        <button onClick={() => handleDeleteTable(tables.id)}>🗑️</button>
       </div>
     ))}
 
-    <div className='generate' onClick={() => setShowAddTableInput(true)}>
+    <div className='tables' onClick={() => setShowAddTableInput(true)}>
   {showAddTableInput ? (
     <div>
       <input
@@ -477,36 +489,36 @@ listsToDelete.forEach(lists => {
         onChange={(e) => setNewTableName(e.target.value)}
         placeholder="Enter list name"
       />
-        <button onClick={() => handleAddTable()}>Add Table</button>
+        <button onClick={() => handleAddTable(currentTable)}>Add Table</button>
     </div>
   ) : (
-    <div className="add-list">
-      <h1>+ Add Table</h1>
+    <div>
+      <h4>+ Add Table</h4>
     </div>
   )}
     </div>
       </div>
         <main>
-{/* task gen */}
+{/* task generacija */}
 {lists
-  .filter(list => list.Tables_id === currentTable) // Filter lists based on currentTable
+  .filter(list => list.Tables_id === currentTable)
   .map(list => (
     <div key={list.id} className="list" onDragOver={(event) => handleDragOver(event, list.id)} onDrop={(event) => handleDrop(event, list.id)}>
       <h2>{list.name}</h2>
-      <button onClick={() => handleEditList(list.id, prompt('Enter new task title'))}>Edit</button>
-          <button onClick={() => handleDeleteList(list.id)}>Delete</button>
+      <button onClick={() => handleEditList(list.id, prompt('Enter new task title'))}>📄</button>
+          <button onClick={() => handleDeleteList(list.id)}>🗑️</button>
       <ul>
         {tasks
           .filter(task => task.Lists_id === list.id)
           .map(task => (
             <li key={task.id} draggable onDragStart={(event) => handleDragStart(event, task)}>
               {task.title}
-              <button onClick={() => handleEditTask(task.id, prompt('Enter new task title'))}>Edit</button>
-              <button onClick={() => handleDeleteTask(task.id)}>Delete</button>
+              <button onClick={() => handleEditTask(task.id, prompt('Enter new task title'))}>📄</button>
+              <button onClick={() => handleDeleteTask(task.id)}>🗑️</button>
             </li>
           ))}
       </ul>
-      <div className='generate' onClick={() => setShowAddTaskInput(prevState => ({ ...prevState, [list.id]: true }))}>
+      <div className='generate table' onClick={() => setShowAddTaskInput(prevState => ({ ...prevState, [list.id]: true }))}>
         {showAddTaskInput[list.id] ? (
           <div>
             <input
@@ -518,16 +530,17 @@ listsToDelete.forEach(lists => {
             <button onClick={() => handleNewTask(list.id)}>Add Task</button>
           </div>
         ) : (
-          <div className="add-task">
-            <h1>+ Add Task</h1>
+          <div>
+            <h4>+ Add Task</h4>
           </div>
         )}
       </div>
     </div>
   ))}
 
-          {/* list gen */}
-          <div className='list generate' onClick={() => setShowAddListInput(true)}>
+        {/* listu generacija */}
+        {currentTable !== 0 && (
+          <div className='list tables' onClick={() => setShowAddListInput(true)}>
             {showAddListInput ? (
               <div>
                 <input
@@ -536,16 +549,16 @@ listsToDelete.forEach(lists => {
                   onChange={(e) => setNewListName(e.target.value)}
                   placeholder="Enter list name"
                 />
-                {tables.map(table => (
-                  <button key={table.id} onClick={() => handleAddList(currentTable)}>Add List</button>
-                ))}
+                <button onClick={() => handleAddList(currentTable)}>Add List</button>
               </div>
             ) : (
-              <div className="add-list">
-                <h1>+ Add List</h1>
+              <div>
+                <h4>+ Add List</h4>
               </div>
             )}
           </div>
+        )}
+
         </main>
 
         <footer>
@@ -557,5 +570,6 @@ listsToDelete.forEach(lists => {
     </div>
   );
 }
+
 
 export default App;

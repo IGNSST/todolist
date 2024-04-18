@@ -1,16 +1,20 @@
+// Prijungti reikalingas bibliotekas
 const express = require("express");
 const bodyParser = require("body-parser");
 const mysql = require("mysql");
 const cors = require("cors");
 
+// Sukurti aplikacijos objektą
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
 app.use(cors());
 
+// Nustatyti serverio prievadą
 const port = 3001;
 
+// Sukurti duomenų bazės ryšį
 const con = mysql.createConnection({
   host: "localhost",
   user: "root",
@@ -22,37 +26,37 @@ con.connect((err) => {
   if (err) throw err;
 });
 
-
-
+// Sukurti naują vartotoją
 app.post("/register", (req, res) => {
   const { username, password, email } = req.body;
   const hashedPassword = bcrypt.hashSync(password, 10);
   const sql = "INSERT INTO Users (Username, Password, Email) VALUES (?, ?, ?)";
   con.query(sql, [username, hashedPassword, email], (err, result) => {
       if (err) {
-          console.error("Error registering user:", err);
-          return res.status(500).json({ status: "error", message: "Failed to register user" });
+          console.error("Klaida registruojant vartotoją:", err);
+          return res.status(500).json({ status: "error", message: "Nepavyko užsiregistruoti vartotojo" });
       }
       res.status(200).json({ status: "success", data: { id: result.insertId } });
   });
 });
 
-// Login user
+// Prisijungti prie vartotojo
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
   const sql = "SELECT ID, Password FROM Users WHERE Username = ?";
   con.query(sql, [username], (err, result) => {
       if (err) {
-          console.error("Error logging in:", err);
-          return res.status(500).json({ status: "error", message: "Failed to login" });
+          console.error("Klaida prisijungiant:", err);
+          return res.status(500).json({ status: "error", message: "Nepavyko prisijungti" });
       }
       if (result.length === 0 || !bcrypt.compareSync(password, result[0].Password)) {
-          return res.status(401).json({ status: "error", message: "Invalid username or password" });
+          return res.status(401).json({ status: "error", message: "Neteisingas vartotojo vardas arba slaptažodis" });
       }
       res.status(200).json({ status: "success", data: { id: result[0].ID } });
   });
 });
 
+// Gauti visas lentelės
 app.get("/tables", (req, res) => {
   const sql = "SELECT * FROM tables";
   con.query(sql, (err, result) => {
@@ -61,7 +65,7 @@ app.get("/tables", (req, res) => {
   });
 });
 
-// Create a new table
+// Sukurti naują lentelę
 app.post("/tables", (req, res) => {
   const { name, User_id} = req.body;
   const sql = "INSERT INTO Tables (name, User_id) VALUES (?, ?)";
@@ -74,7 +78,7 @@ app.post("/tables", (req, res) => {
   });
 });
 
-// Update a specific table
+// Atnaujinti konkretų lentelę
 app.put("/tables/:id", (req, res) => {
   const id = req.params.id;
   const { name } = req.body;
@@ -85,7 +89,7 @@ app.put("/tables/:id", (req, res) => {
   });
 });
 
-// Delete a specific table
+// Ištrinti konkretų lentelę
 app.delete("/tables/:id", (req, res) => {
   const id = req.params.id;
   const deleteSql = "DELETE FROM Tables WHERE id = ?";
@@ -95,7 +99,7 @@ app.delete("/tables/:id", (req, res) => {
   });
 });
 
-// Retrieve all lists
+// Gauti visas sąrašus
 app.get("/lists", (req, res) => {
   const sql = "SELECT * FROM lists";
   con.query(sql, (err, result) => {
@@ -104,7 +108,7 @@ app.get("/lists", (req, res) => {
   });
 });
 
-// Create a new list
+// Sukurti naują sąrašą
 app.post("/lists", (req, res) => {
   const { name, Tables_id} = req.body;
   const sql = "INSERT INTO lists (name, Tables_id) VALUES (?, ?)";
@@ -117,7 +121,7 @@ app.post("/lists", (req, res) => {
   });
 });
 
-// Retrieve a specific list
+// Gauti konkretų sąrašą
 app.get("/lists/:id", (req, res) => {
   const id = req.params.id;
   const sql = "SELECT * FROM lists WHERE id = ?";
@@ -127,7 +131,7 @@ app.get("/lists/:id", (req, res) => {
   });
 });
 
-// Update a specific list
+// Atnaujinti konkretų sąrašą
 app.put("/lists/:id", (req, res) => {
   const id = req.params.id;
   const { name } = req.body;
@@ -138,7 +142,7 @@ app.put("/lists/:id", (req, res) => {
   });
 });
 
-// Delete a specific list
+// Ištrinti konkretų sąrašą
 app.delete("/lists/:id", (req, res) => {
   const id = req.params.id;
   const deleteSql = "DELETE FROM lists WHERE id = ?";
@@ -148,7 +152,7 @@ app.delete("/lists/:id", (req, res) => {
   });
 });
 
-// Retrieve all tasks
+// Gauti visas užduotis
 app.get("/tasks", (req, res) => {
   const sql = "SELECT * FROM tasks";
   con.query(sql, (err, result) => {
@@ -157,15 +161,15 @@ app.get("/tasks", (req, res) => {
   });
 });
 
-// Create a new task/card in a specific list
+// Sukurti naują užduotį/kortelę konkretiame sąraše
 app.post("/tasks", (req, res) => {
-  const { list_id, title, description, due_date } = req.body; // Extracting data from request body
+  const { list_id, title, description, due_date } = req.body; // Ištraukti duomenis iš užklausos kūno
   const sql =
     "INSERT INTO tasks (Lists_id, title, description, due_date) VALUES (?, ?, ?, ?)";
   con.query(sql, [list_id, title, description, due_date], (err, result) => {
     if (err) {
-      console.error("Error creating task:", err);
-      return res.status(500).json({ status: "error", message: "Failed to create task" });
+      console.error("Klaida kuriant užduotį:", err);
+      return res.status(500).json({ status: "error", message: "Nepavyko sukurti užduoties" });
     }
     res.status(200).json({
       status: "success",
@@ -174,43 +178,43 @@ app.post("/tasks", (req, res) => {
   });
 });
 
-  
-  app.put("/tasks/:task_id", (req, res) => {
-    const taskId = req.params.task_id;
-    const { title, description, due_date } = req.body;
-    const updateSql =
-      "UPDATE tasks SET title = ?, description = ?, due_date = ? WHERE id = ?";
-    con.query(
-      updateSql,
-      [title, description, due_date, taskId],
-      (err) => {
-        if (err) throw err;
-        res.status(200).json({ status: "success" });
-      }
-    );
-  });
+// Atnaujinti konkretų užduotį/kortelę
+app.put("/tasks/:task_id", (req, res) => {
+  const taskId = req.params.task_id;
+  const { title, description, due_date } = req.body;
+  const updateSql =
+    "UPDATE tasks SET title = ?, description = ?, due_date = ? WHERE id = ?";
+  con.query(
+    updateSql,
+    [title, description, due_date, taskId],
+    (err) => {
+      if (err) throw err;
+      res.status(200).json({ status: "success" });
+    }
+  );
+});
 
-  app.put("/list/:task_id", (req, res) => {
-    const taskId = req.params.task_id;
-    const { List_id } = req.body;
-    const updateSql =
-      "UPDATE tasks SET Lists_id = ? WHERE id = ?";
-    con.query(
-      updateSql,
-      [List_id, taskId],
-      (err) => {
-        if (err) {
-          console.error(err);
-          res.status(500).json({ error: "Internal server error" });
-          return;
-        }
-        res.status(200).json({ status: "success" });
+// Atnaujinti sąrašo užduotį/kortelę
+app.put("/list/:task_id", (req, res) => {
+  const taskId = req.params.task_id;
+  const { List_id } = req.body;
+  const updateSql =
+    "UPDATE tasks SET Lists_id = ? WHERE id = ?";
+  con.query(
+    updateSql,
+    [List_id, taskId],
+    (err) => {
+      if (err) {
+        console.error(err);
+        res.status(500).json({ error: "Vidinė serverio klaida" });
+        return;
       }
-    );
-  });
-  
-  
-  // Delete a specific task/card in a specific list
+      res.status(200).json({ status: "success" });
+    }
+  );
+});
+
+// Ištrinti konkretų užduotį/kortelę
 app.delete("/tasks/:task_id", (req, res) => {
     const taskId = req.params.task_id;
     const deleteSql = "DELETE FROM tasks WHERE id = ?";
@@ -220,6 +224,7 @@ app.delete("/tasks/:task_id", (req, res) => {
     });
   });
 
-  app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
-  });
+// Paleisti serverį ir laukti užklausų
+app.listen(port, () => {
+  console.log(`Pavyzdinė programa klausosi prievado ${port}`);
+});
