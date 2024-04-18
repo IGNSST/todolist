@@ -1,104 +1,166 @@
 .App {
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
-  
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow: hidden;
+
+}
+
+.container{
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
   .App-logo {
-    height: 40vmin;
-    pointer-events: none;
+    animation: App-logo-spin infinite 20s linear;
   }
-  
-  @media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-      animation: App-logo-spin infinite 20s linear;
-    }
-  }
-  
-  .App-header {
-    background-color: #282c34;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
-  }
-  
-  .App-link {
-    color: #61dafb;
-  }
-  
-  @keyframes App-logo-spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
-  
-  header {
-   background-color: #0d519a; /* Blue */
-    height: 7.5rem;
-  }
-  
-  
-  
-  footer{
-    background-color: #343a40; /* Dark Gray */
-    position: absolute;
-    bottom: 0;
-    height: 5rem;
-    width: 100%;
-  }
-  
-  .footer-content {
-  
-    color: white;
-  }
-  
-  .logo {
-    width: 50px; /* Adjust size as needed */
-    height: 50px; /* Adjust size as needed */
-  }
-  
-  .header-content {
-    display: flex;
-    align-items: center;
-  }
-  
-  main{
-    background-color: black;
-    height: 100%;
-    color: white;
-  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+/* Global styles */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Sidebar styles */
+.sidebar {
+  width: 200px;
+  height: 100%;
+  background-color: #333;
+  color: #fff;
+  padding: 20px;
+  float: left; /* Float the sidebar to the left */
+}
+
+.sidebar ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.sidebar ul li {
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.sidebar ul li:hover {
+  color: #ffd700; /* Change color on hover */
+}
+
+/* Header styles */
+header {
+  background-color: #333;
+  color: #fff;
+  padding: 10px 0;
+  text-align: center;
+}
 
 
+.logo {
+  width: 50px;
+  height: 50px;
+  margin-right: 10px;
+}
+
+/* Main styles */
+#page-container {
+
+}
+
+
+.list-container {
+  display: flex; /* Flex the list items */
+  overflow-y: auto; /* Allow horizontal overflow with scroll */
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  overflow-y: auto; /* Allow horizontal overflow with scroll */
+}
+
+main {
+  margin-left: 220px; /* Adjust the margin to accommodate the sidebar */
+  background-color: black;
+  height: calc(100vh - 20px); /* Adjust the height to fit the viewport minus any padding/margin */
+  color: white;
+  overflow-y: auto; /* Allow vertical overflow with scroll */
+}
 
 .list {
-    width: 300px; /* Adjust as needed */
-    margin: 10px; /* Adjust spacing between columns */
-    display: inline-block;
-    vertical-align: top;
-    column-count: 3; /* Number of columns */
-    column-gap: 20px; /* Adjust gap between columns */
-    border-style: solid;
-    border-width: 5px;
-    border-color: white; /* Specify the color */
-  }
-  
-  .list h2 {
-    margin-bottom: 5px;
-  }
-  
-  .list ul {
-    list-style: none;
-    padding: 0;
-  }
-  
-  .list ul li {
-    margin-bottom: 5px;
-  }
+  text-align: center;
+  width: 200px;
+  height: 92%;
+  margin: 10px;
+  display: inline-block;
+  vertical-align: top;
+  column-gap: 20px;
+  border-style: solid;
+  border-width: 5px;
+  border-color: white;
+}
+
+.list h2 {
+  margin-bottom: 5px;
+}
+
+.list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.list ul li {
+  margin-bottom: 5px;
+}
+
+.generate{
+  user-select: none;
+  cursor: pointer;
+}
+
+.add-task,
+.add-list {
+  background-color: #ddd;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* Footer styles */
+footer {
+  margin-top: auto;
+  background-color: #333;
+  color: #fff;
+  padding: 10px 0;
+  text-align: center;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

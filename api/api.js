@@ -24,9 +24,80 @@ con.connect((err) => {
 
 
 
+app.post("/register", (req, res) => {
+  const { username, password, email } = req.body;
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  const sql = "INSERT INTO Users (Username, Password, Email) VALUES (?, ?, ?)";
+  con.query(sql, [username, hashedPassword, email], (err, result) => {
+      if (err) {
+          console.error("Error registering user:", err);
+          return res.status(500).json({ status: "error", message: "Failed to register user" });
+      }
+      res.status(200).json({ status: "success", data: { id: result.insertId } });
+  });
+});
+
+// Login user
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+  const sql = "SELECT ID, Password FROM Users WHERE Username = ?";
+  con.query(sql, [username], (err, result) => {
+      if (err) {
+          console.error("Error logging in:", err);
+          return res.status(500).json({ status: "error", message: "Failed to login" });
+      }
+      if (result.length === 0 || !bcrypt.compareSync(password, result[0].Password)) {
+          return res.status(401).json({ status: "error", message: "Invalid username or password" });
+      }
+      res.status(200).json({ status: "success", data: { id: result[0].ID } });
+  });
+});
+
+app.get("/tables", (req, res) => {
+  const sql = "SELECT * FROM tables";
+  con.query(sql, (err, result) => {
+    if (err) throw err;
+    res.status(200).json(result);
+  });
+});
+
+// Create a new table
+app.post("/tables", (req, res) => {
+  const { name, User_id} = req.body;
+  const sql = "INSERT INTO Tables (name, User_id) VALUES (?, ?)";
+  con.query(sql, [name, User_id], (err, result) => {
+    if (err) throw err;
+    res.status(200).json({
+      status: "success",
+      data: { id: result.insertId },
+    });
+  });
+});
+
+// Update a specific table
+app.put("/tables/:id", (req, res) => {
+  const id = req.params.id;
+  const { name } = req.body;
+  const updateSql = "UPDATE Tables SET name = ? WHERE id = ?";
+  con.query(updateSql, [name, id], (err) => {
+    if (err) throw err;
+    res.status(200).json({ status: "success" });
+  });
+});
+
+// Delete a specific table
+app.delete("/tables/:id", (req, res) => {
+  const id = req.params.id;
+  const deleteSql = "DELETE FROM Tables WHERE id = ?";
+  con.query(deleteSql, [id], (err) => {
+    if (err) throw err;
+    res.status(200).json({ status: "success" });
+  });
+});
+
 // Retrieve all lists
 app.get("/lists", (req, res) => {
-  const sql = "SELECT * FROM lists ORDER BY possition";
+  const sql = "SELECT * FROM lists";
   con.query(sql, (err, result) => {
     if (err) throw err;
     res.status(200).json(result);
@@ -35,9 +106,9 @@ app.get("/lists", (req, res) => {
 
 // Create a new list
 app.post("/lists", (req, res) => {
-  const { name, possition } = req.body;
-  const sql = "INSERT INTO lists (name, possition) VALUES (?, ?)";
-  con.query(sql, [name, possition], (err, result) => {
+  const { name, Tables_id} = req.body;
+  const sql = "INSERT INTO lists (name, Tables_id) VALUES (?, ?)";
+  con.query(sql, [name, Tables_id], (err, result) => {
     if (err) throw err;
     res.status(200).json({
       status: "success",
@@ -59,9 +130,9 @@ app.get("/lists/:id", (req, res) => {
 // Update a specific list
 app.put("/lists/:id", (req, res) => {
   const id = req.params.id;
-  const { name, possition } = req.body;
-  const updateSql = "UPDATE lists SET name = ?, possition = ? WHERE id = ?";
-  con.query(updateSql, [name, possition, id], (err) => {
+  const { name } = req.body;
+  const updateSql = "UPDATE lists SET name = ? WHERE id = ?";
+  con.query(updateSql, [name, id], (err) => {
     if (err) throw err;
     res.status(200).json({ status: "success" });
   });
@@ -103,66 +174,47 @@ app.post("/tasks", (req, res) => {
   });
 });
 
-
-// Retrieve tasks for a specific list
-app.get("/lists/:id/tasks", (req, res) => {
-  const listId = req.params.id;
-  const sql = "SELECT * FROM tasks WHERE Lists_id = ?";
-  con.query(sql, [listId], (err, result) => {
-    if (err) throw err;
-    res.status(200).json(result);
-  });
-});
   
-// Create a new task/card in a specific list
-app.post("/lists/:List_id/tasks", (req, res) => {
-    const listId = req.params.list_id;
-    const { title, description, due_date } = req.body;
-    const sql =
-      "INSERT INTO tasks (Lists_id, title, description, due_date) VALUES (?, ?, ?, ?)";
-    con.query(sql, [listId, title, description, due_date], (err, result) => {
-      if (err) throw err;
-      res.status(200).json({
-        status: "success",
-        data: { id: result.insertId },
-      });
-    });
-  });
-  
-  // Retrieve a specific task/card in a specific list
-app.get("/lists/:List_id/tasks/:task_id", (req, res) => {
-    const listId = req.params.list_id;
-    const taskId = req.params.task_id;
-    const sql = "SELECT * FROM tasks WHERE Lists_id = ? AND id = ?";
-    con.query(sql, [listId, taskId], (err, result) => {
-      if (err) throw err;
-      res.status(200).json(result[0]);
-    });
-  });
-  
-  // Update a specific task/card in a specific list
-app.put("/lists/:List_id/tasks/:task_id", (req, res) => {
-    const listId = req.params.list_id;
+  app.put("/tasks/:task_id", (req, res) => {
     const taskId = req.params.task_id;
     const { title, description, due_date } = req.body;
     const updateSql =
-      "UPDATE tasks SET title = ?, description = ?, due_date = ? WHERE Lists_id = ? AND id = ?";
+      "UPDATE tasks SET title = ?, description = ?, due_date = ? WHERE id = ?";
     con.query(
       updateSql,
-      [title, description, due_date, listId, taskId],
+      [title, description, due_date, taskId],
       (err) => {
         if (err) throw err;
         res.status(200).json({ status: "success" });
       }
     );
   });
+
+  app.put("/list/:task_id", (req, res) => {
+    const taskId = req.params.task_id;
+    const { List_id } = req.body;
+    const updateSql =
+      "UPDATE tasks SET Lists_id = ? WHERE id = ?";
+    con.query(
+      updateSql,
+      [List_id, taskId],
+      (err) => {
+        if (err) {
+          console.error(err);
+          res.status(500).json({ error: "Internal server error" });
+          return;
+        }
+        res.status(200).json({ status: "success" });
+      }
+    );
+  });
+  
   
   // Delete a specific task/card in a specific list
-app.delete("/lists/:List_id/tasks/:task_id", (req, res) => {
-    const listId = req.params.list_id;
+app.delete("/tasks/:task_id", (req, res) => {
     const taskId = req.params.task_id;
-    const deleteSql = "DELETE FROM tasks WHERE Lists_id = ? AND id = ?";
-    con.query(deleteSql, [listId, taskId], (err) => {
+    const deleteSql = "DELETE FROM tasks WHERE id = ?";
+    con.query(deleteSql, [taskId], (err) => {
       if (err) throw err;
       res.status(200).json({ status: "success" });
     });
