@@ -16,85 +16,9 @@ function App() {
 
 
   useEffect(() => {
-    reloadLists();
-    reloadTasks();
-    reloadTables()
-  }, []);
-
-  const handleTableClick = (tableId) => {
-    setCurrentTable(tableId);
-  };
-
-
-
-  // Fetch sarašus
-  let reloadLists = () => {
-    fetch('http://localhost:3001/lists/', {
-      method: "GET",
-      mode: "cors",
-      cache: "no-cache",
-      credentials: "same-origin",
-      headers: {
-        "Content-Type": "application/json",
-      }, 
-    })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
-    .then((data) => {
-      setLists(data);
-    })
-    .catch((error) => {
-      console.error("Error fetching lists:", error);
-    });
-  };
-
-  // Fetch užduotis
-  let reloadTasks = () => {
-    fetch('http://localhost:3001/tasks/', {
-      method: "GET",
-      mode: "cors",
-      cache: "no-cache",
-      credentials: "same-origin",
-      headers: {
-        "Content-Type": "application/json",
-      }, 
-    })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
-    .then((data) => {
-      setTasks(data);
-    })
-    .catch((error) => {
-      console.error("Error fetching tasks:", error);
-    });
-  };
-
-  // Fetch lenteles
-  let reloadTables = () => {
-    fetch('http://localhost:3001/tables/', {
-      method: "GET",
-      mode: "cors",
-      cache: "no-cache",
-      credentials: "same-origin",
-      headers: {
-        "Content-Type": "application/json",
-      }, 
-    })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
-    .then((data) => {
+    fetchData('lists').then(data => setLists(data));
+    fetchData('tasks').then(data => setTasks(data));
+    fetchData('tables').then(data => {
       setTables(data);
       if (Array.isArray(data) && data.length > 0) {
         const tableExists = data.find(table => table.id);
@@ -102,11 +26,53 @@ function App() {
       } else {
         setCurrentTable(0);
       }
-    })
-    .catch((error) => {
-      console.error("Error fetching tasks:", error);
+    }).catch(error => {
+      console.error("Error fetching tables:", error);
     });
+  }, []);
+
+  const handleTableClick = (tableId) => {
+    setCurrentTable(tableId);
   };
+
+// Builder šablonas
+class FetchBuilder {
+  constructor(url) {
+    this.url = url;
+    this.method = 'GET';
+    this.headers = {
+      'Content-Type': 'application/json',
+    };
+  }
+
+  setMethod(method) {
+    this.method = method;
+    return this;
+  }
+
+  setHeaders(headers) {
+    this.headers = headers;
+    return this;
+  }
+
+  build() {
+    return fetch(this.url, {
+      method: this.method,
+      headers: this.headers,
+    });
+  }
+}
+
+// Pritaikymas: Sukurkime funkciją, kuri naudotų FetchBuilder
+  async function fetchData(endpoint) {
+  const url = `http://localhost:3001/${endpoint}`;
+  const fetchBuilder = new FetchBuilder(url);
+  const response = await fetchBuilder.build();
+  return await response.json();
+}
+
+
+
 
   // funkcija prideti saraša
   const handleAddList = (tables) => {
@@ -126,7 +92,7 @@ function App() {
       setLists(prevLists => [...prevLists, data]); // Atnaujinti sąrašų būseną su naujai pridėtu sąrašu
       setShowAddListInput(false); // Paslėpti įvestį po sąrašo pridėjimo
       setNewListName(''); // Išvalyti įvesties lauką
-      reloadLists();
+      fetchData('lists').then(data => setLists(data));
     })
     .catch(error => console.error("Error adding list:", error));
   };
@@ -156,8 +122,8 @@ function App() {
       .then(newTask => {
         // Atnaujinti užduočių būseną su naujai sukurtu užduotimi
         setTasks([...tasks, newTask]);
-        reloadLists();
-        reloadTasks();
+        fetchData('lists').then(data => setLists(data));
+        fetchData('tasks').then(data => setTasks(data));
         setNewTaskName('');
         setShowAddTaskInput(prevState => ({ ...prevState, [listId]: false }))
       })
@@ -169,6 +135,10 @@ function App() {
 
 // Funkcija, skirta tvarkyti užduoties redagavimą
   const handleEditTask = (taskId, updatedTitle) => {
+    if (updatedTitle === null || updatedTitle === undefined) {
+      // Return without updating lists
+      return;
+    }  
     const updatedTasks = tasks.map(task =>
       task.id === taskId ? { ...task, title: updatedTitle } : task
     );
@@ -194,8 +164,8 @@ function App() {
       })
       .then(() => {
         // Įkelti sąrašus ir užduotis tik tada, kai API užklausa yra sėkminga
-        reloadLists();
-        reloadTasks();
+        fetchData('lists').then(data => setLists(data));
+        fetchData('tasks').then(data => setTasks(data));
         setNewTaskName('');
       })
       .catch(error => {
@@ -224,6 +194,10 @@ function App() {
 
 // Funkcija, skirta tvarkyti sąrašo redagavimą
 const handleEditList = (listId, updatedName) => {
+  if (updatedName === null || updatedName === undefined) {
+    // Return without updating lists
+    return;
+  }  
 // Atnaujinti sąrašų būseną su redaguotu sąrašu
   const updatedLists = lists.map(list =>
     list.id === listId ? { ...list, name: updatedName } : list
@@ -330,8 +304,8 @@ const handleDrop = (event, listId) => {
     })
     .then(() => {
       // Reload lists and tasks only after the API call is successful
-      reloadLists();
-      reloadTasks();
+      fetchData('lists').then(data => setLists(data));
+      fetchData('tasks').then(data => setTasks(data));
       setDraggedTask(null); // Reset the dragged task state
     })
     .catch(error => {
@@ -358,13 +332,27 @@ const handleAddTable = (tableId) => {
   .then(data => {
     setShowAddTableInput(false); // Hide the input after adding the list
     setNewTableName(''); // Clear the input field
-    reloadTables();
+    fetchData('tables').then(data => {
+      setTables(data);
+      if (Array.isArray(data) && data.length > 0) {
+        const tableExists = data.find(table => table.id);
+        setCurrentTable(tableExists.id);
+      } else {
+        setCurrentTable(0);
+      }
+    }).catch(error => {
+      console.error("Error fetching tables:", error);
+    });
   })
   .catch(error => console.error("Error adding list:", error));
 };
 
 // funkcija pakeisti lenteles duomenis
 const handleEditTable = (tableId, updatedName) => {
+  if (updatedName === null || updatedName === undefined) {
+    // Return without updating lists
+    return;
+  }  
     // Atnaujinkite sąrašų būseną su redaguotu sąrašu
   const updatedTables = tables.map(tables =>
     tables.id === tableId ? { ...tables, name: updatedName } : tables
@@ -446,9 +434,19 @@ listsToDelete.forEach(lists => {
       }
       
 
-      reloadTables()
-      reloadLists()
-      reloadTasks()
+      fetchData('lists').then(data => setLists(data));
+      fetchData('tasks').then(data => setTasks(data));
+      fetchData('tables').then(data => {
+        setTables(data);
+        if (Array.isArray(data) && data.length > 0) {
+          const tableExists = data.find(table => table.id);
+          setCurrentTable(tableExists.id);
+        } else {
+          setCurrentTable(0);
+        }
+      }).catch(error => {
+        console.error("Error fetching tables:", error);
+      });
     })
     .catch(error => {
       console.error('Error deleting list:', error);
